@@ -1,7 +1,4 @@
 import kotlin.concurrent.fixedRateTimer
-import kotlin.system.measureTimeMillis
-import com.google.cloud.firestore.FirestoreOptions
-
 
 fun main() {
 
@@ -9,16 +6,17 @@ fun main() {
     val db = Firestore()
 
     db.write(menu)
-    fixedRateTimer(period = 1000L*60L*30L) { verifyAndUpdate(menu) }
+    fixedRateTimer(period = 1000L*30L) { verifyAndUpdate(menu, db) }
     while(true){}
 }
 
-fun verifyAndUpdate(menu: GoogleSheets){
+fun verifyAndUpdate(menu: GoogleSheets, db: Firestore){
     val old = menu.lastLocalUpdate
     val new = menu.lastSheetUpdate
 
     if(new.compareTo(old) == 1){
         menu.updateMenus()
+        db.write(menu)
         println(menu.lastLocalUpdate)
     }
 }

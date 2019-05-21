@@ -1,5 +1,4 @@
 import com.google.auth.oauth2.GoogleCredentials
-import com.google.cloud.firestore.SetOptions
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
 import com.google.firebase.cloud.FirestoreClient
@@ -7,14 +6,14 @@ import java.io.FileNotFoundException
 
 class Firestore {
     companion object {
-        val accountPath = "restauranteuniversitario-ufrj.json"
+        const val accountPath = "bd-firestore.json"
     }
 
-    var db: com.google.cloud.firestore.Firestore
+    private val db: com.google.cloud.firestore.Firestore
 
     init {
         val serviceAccount = Firestore::class.java.getResourceAsStream(accountPath)
-            ?: throw FileNotFoundException("Resource not found: ${accountPath}")
+            ?: throw FileNotFoundException("Resource not found: $accountPath")
 
         val credentials = GoogleCredentials.fromStream(serviceAccount)
 
@@ -33,13 +32,12 @@ class Firestore {
     }
 
     private fun sendToFirebase(meal: String, raw: MutableList<MutableList<Any>>) {
-        val tempHash = hashMapOf<String, Any>()
+        val tempHash = hashMapOf<Any, Any>()
         for(day in 1..7){
             for(cat in 1..7){
-                tempHash[raw[cat][0].toString()] = raw[cat][day]
+                tempHash[raw[cat][0]] = raw[cat][day]
             }
-            db.collection(meal).document(raw[0][day].toString()).set(tempHash, SetOptions.merge())
+            db.collection(raw[0][day].toString().trim()).document(meal).set(tempHash)
         }
     }
-
 }
